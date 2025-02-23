@@ -1,24 +1,5 @@
 use crate::utils::{byte_to_bits, bits_to_byte, Block, word_xor, Stream};
 
-
-// Input Block   Initial Round Key          Round Key             Final Round Key
-//     │                │                       │                       │
-//     ▼                ▼                       ▼                       ▼
-//  ┌─────────┐    ┌──────────┐ ┌────────┐ ┌──────────┐ ┌────────┐ ┌──────────┐
-//  │ Block   │──► │   Add    │ │  Sub   │ │   Mix    │ │  Sub   │ │   Add    │
-//  │         │    │  Round   │ │ Bytes  │ │ Columns  │ │ Bytes  │ │  Round   │
-//  │         │    │   Key    │ │        │ │          │ │        │ │   Key    │
-//  └─────────┘    └────┬─────┘ └───┬────┘ └────┬─────┘ └───┬────┘ └────┬─────┘
-//                      │           │           │           │           │
-//                      ▼           ▼           ▼           ▼           ▼
-//                 ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
-//                 │ Round 0 │ │ Round 1 │ │ Round 2 │ │ Round   │ │  Final  │
-//                 │         │ │   to    │ │   to    │ │ Nr - 1  │ │  Round  │
-//                 │         │ │ Nr - 2  │ │ Nr - 1  │ │         │ │         │
-//                 └─────────┘ └─────────┘ └─────────┘ └─────────┘ └────┬────┘
-//                                                                      │
-//                                                                      ▼
-//                                                                 Ciphertext
 pub(crate) fn aes(block: Block, key: Stream) -> Block {
     let key_expanded = key_expansion(key);
     let first_round_key: Block = [key_expanded[0], key_expanded[1], key_expanded[2], key_expanded[3]];
@@ -71,19 +52,19 @@ pub(crate) fn key_expansion(key: [u8; 16]) -> [[u8; 4]; 44] {
         key_expanded[i] = temp;
     }
 
-    // while i ≤ 4 ∗Nr +3 do
+    
     for round in 4..44 {
-        // temp ← w[i−1]
+        
         let mut temp = key_expanded[round - 1];
 
         // if i mod Nk = 0 then
         if round % 4 == 0 {
-            // temp ← SUBWORD(ROTWORD(temp))⊕Rcon[i/Nk]
+            
             temp = sub_word(rot_word(temp));
             temp = word_xor(temp, round_constant((round / 4) - 1));
 
         }
-        //  w[i] ← w[i−Nk]⊕temp
+        
         key_expanded[round] = word_xor(key_expanded[round - 4], temp);
     }
 

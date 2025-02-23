@@ -14,25 +14,9 @@ use crate::utils::{stream_to_bits, bits_to_stream, bitwise_right_shift, Stream, 
 // Y_{i+1} = (Y_i xor X_{i-1}) * H
 // output: Y_{n+1} where n is the number of blocks.
 // GHASH Process
-//
-//           X1                      X2          ...          XM 
-//           │                       │                        │ 
-//           │                       ▼                        ▼   
-//           │                  ┌──────────┐             ┌──────────┐ 
-//           │           ┌─────▶│   XOR    │      ┌─────▶│   XOR    │ 
-//           │           │      └────┬─────┘      │      └────┬─────┘ 
-//           │           │           │            │           |
-//           ▼           │           ▼            │           ▼
-//  ┌────────────────┐   │   ┌────────────────┐   │   ┌────────────────┐ 
-//  │ multiply by H  │   │   │ multiply by H  │   │   │ multiply by H  │ 
-//  └────────┬───────┘   │   └───────┬────────┘   │   └───────┬────────┘ 
-//           │           │           │            │           |
-//           ▼           │           ▼            │           ▼
-//      ┌─────────┐      │      ┌─────────┐       │      ┌─────────┐
-//      │  TAG1   │ ─────┘      │   TAG2  │ ──────┘      │   TAGM  │
-//      └─────────┘             └─────────┘              └─────────┘
+
 // todo: handle arbitrary number of blocks
-fn ghash<N>(hash_key: Stream, message: [Stream; N]) -> Stream {
+fn ghash<let N: u32>(hash_key: Stream, message: [Stream; N]) -> Stream {
     let mut tag = [0; 16];
     for i in 0..2 {
         tag = stream_xor(tag, message[i]);
